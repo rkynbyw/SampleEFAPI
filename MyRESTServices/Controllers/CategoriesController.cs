@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using MyRESTServices.BLL.DTOs;
 using MyRESTServices.BLL.Interfaces;
 
@@ -9,9 +10,15 @@ namespace MyRESTServices.Controllers
     public class CategoriesController : ControllerBase
     {
         private readonly ICategoryBLL _categoryBLL;
-        public CategoriesController(ICategoryBLL categoryBLL)
+        private readonly IValidator<CategoryCreateDTO> _validatorCategoryCreate;
+        private readonly IValidator<CategoryUpdateDTO> _validatorCategoryUpdate;
+        public CategoriesController(ICategoryBLL categoryBLL,
+            IValidator<CategoryCreateDTO> validatorCategoryCreate,
+            IValidator<CategoryUpdateDTO> validatorCategoryUpdate)
         {
             _categoryBLL = categoryBLL;
+            _validatorCategoryCreate = validatorCategoryCreate;
+            _validatorCategoryUpdate = validatorCategoryUpdate;
         }
 
         [HttpGet]
@@ -40,6 +47,13 @@ namespace MyRESTServices.Controllers
                 return BadRequest();
             }
 
+            var validatorResult = await _validatorCategoryCreate.ValidateAsync(categoryCreateDTO);
+            if (!validatorResult.IsValid)
+            {
+                Helpers.Extensions.AddToModelState(validatorResult, ModelState);
+                return BadRequest(ModelState);
+            }
+
             try
             {
                 var result = await _categoryBLL.Insert(categoryCreateDTO);
@@ -57,6 +71,13 @@ namespace MyRESTServices.Controllers
             if (id != categoryUpdateDTO.CategoryId)
             {
                 return BadRequest();
+            }
+
+            var validatorResult = await _validatorCategoryUpdate.ValidateAsync(categoryUpdateDTO);
+            if (!validatorResult.IsValid)
+            {
+                Helpers.Extensions.AddToModelState(validatorResult, ModelState);
+                return BadRequest(ModelState);
             }
 
             try

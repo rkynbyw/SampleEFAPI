@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using MyRESTServices.BLL.DTOs;
 using MyRESTServices.BLL.Interfaces;
 
@@ -9,10 +10,16 @@ namespace MyRESTServices.Controllers
     public class ArticlesController : ControllerBase
     {
         private readonly IArticleBLL _articleBLL;
+        private readonly IValidator<ArticleCreateDTO> _validatorArticleCreate;
+        private readonly IValidator<ArticleUpdateDTO> _validatorArticleUpdate;
 
-        public ArticlesController(IArticleBLL articleBLL)
+        public ArticlesController(IArticleBLL articleBLL,
+            IValidator<ArticleCreateDTO> validatorArticleCreate,
+            IValidator<ArticleUpdateDTO> validatorArticleUpdate)
         {
             _articleBLL = articleBLL;
+            _validatorArticleCreate = validatorArticleCreate;
+            _validatorArticleUpdate = validatorArticleUpdate;
         }
 
         [HttpGet]
@@ -41,6 +48,13 @@ namespace MyRESTServices.Controllers
                 return BadRequest();
             }
 
+            var validatorResult = await _validatorArticleCreate.ValidateAsync(articleCreateDTO);
+            if (!validatorResult.IsValid)
+            {
+                Helpers.Extensions.AddToModelState(validatorResult, ModelState);
+                return BadRequest(ModelState);
+            }
+
             try
             {
                 var result = await _articleBLL.Insert(articleCreateDTO);
@@ -58,6 +72,13 @@ namespace MyRESTServices.Controllers
             if (id != articleUpdateDTO.ArticleID)
             {
                 return BadRequest();
+            }
+
+            var validatorResult = await _validatorArticleUpdate.ValidateAsync(articleUpdateDTO);
+            if (!validatorResult.IsValid)
+            {
+                Helpers.Extensions.AddToModelState(validatorResult, ModelState);
+                return BadRequest(ModelState);
             }
 
             try
