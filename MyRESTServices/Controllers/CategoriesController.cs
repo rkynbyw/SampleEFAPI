@@ -130,7 +130,7 @@ namespace MyRESTServices.Controllers
         }
 
         [HttpGet("paging")]
-        public async Task<IActionResult> GetWithPaging(int pageNumber, int pageSize, string name)
+        public async Task<IActionResult> GetWithPaging(int pageNumber, int pageSize, string name = "")
         {
             try
             {

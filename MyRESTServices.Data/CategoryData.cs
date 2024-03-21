@@ -43,7 +43,7 @@ namespace MyRESTServices.Data
             return await _context.Categories.Where(c => c.CategoryName.Contains(name)).CountAsync();
         }
 
-        public async Task<IEnumerable<Category>> GetWithPaging(int pageNumber, int pageSize, string name = null)
+        public async Task<IEnumerable<Category>> GetWithPaging(int pageNumber, int pageSize, string name)
         {
             IQueryable<Category> query = _context.Categories.OrderBy(c => c.CategoryName);
 
