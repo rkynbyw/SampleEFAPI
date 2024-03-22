@@ -1,6 +1,6 @@
 ﻿@model IEnumerable<SampleMVC.Models.Category>
 @{
-    int pageNumber = 0;
+    int pageNumber = 1;
     if(ViewData["pageNumber"] != null)
     {
         pageNumber = Convert.ToInt32(ViewData["pageNumber"]);
@@ -54,10 +54,9 @@
                 </table>
 
                 <a class="btn btn-outline-info btn-sm" asp-action="Index" asp-route-pageNumber="1">First</a>&nbsp;
-                <a href="/Categories/Index?act=prev&pageNumber=@pageNumber"
-                   class="btn btn-outline-info btn-sm">Prev</a>&nbsp;
-                <a href="/Categories/Index?act=next&pageNumber=@pageNumber"
-                   class="btn btn-outline-info btn-sm">Next</a>&nbsp;
+                <a href="/Categories/Index?act=prev&pageNumber=@(pageNumber - 1)" class="btn btn-outline-info btn-sm">Prev</a>&nbsp;
+                <a href="/Categories/Index?act=next&pageNumber=@(pageNumber + 1)" class="btn btn-outline-info btn-sm">Next</a>&nbsp;
+
                 <a class="btn btn-outline-info btn-sm" asp-action="Index"
                    asp-route-pageNumber="@(ViewData["totalPages"])">Last</a>
 

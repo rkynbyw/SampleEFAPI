@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyRESTServices.BLL.DTOs;
 using MyRESTServices.BLL.Interfaces;
@@ -42,6 +43,7 @@ namespace MyRESTServices.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "contributor")]
         public async Task<IActionResult> Post(ArticleCreateDTO articleCreateDTO)
         {
             if (articleCreateDTO == null)

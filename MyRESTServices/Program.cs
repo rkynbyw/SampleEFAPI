@@ -1,11 +1,15 @@
 
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using MyRESTServices.BLL;
 using MyRESTServices.BLL.DTOs.Validation;
 using MyRESTServices.BLL.Interfaces;
 using MyRESTServices.Data;
 using MyRESTServices.Data.Interfaces;
+using MyRESTServices.Helpers;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,10 +39,40 @@ builder.Services.AddScoped<ICategoryBLL, CategoryBLL>();
 builder.Services.AddScoped<IArticleData, ArticleData>();
 builder.Services.AddScoped<IArticleBLL, ArticleBLL>();
 
+// DI for UserData and UserBLL
+builder.Services.AddScoped<IUserData, UserData>();
+builder.Services.AddScoped<IUserBLL, UserBLL>();
+
+// DI for RoleData and RoleBLL
+builder.Services.AddScoped<IRoleData, RoleData>();
+builder.Services.AddScoped<IRoleBLL, RoleBLL>();
+
 //automapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddValidatorsFromAssemblyContaining<CategoryCreateDTOValidator>();
 
+//jwt token
+var appSettingsSection = builder.Configuration.GetSection("AppSettings");
+builder.Services.Configure<AppSettings>(appSettingsSection);
+var appSettings = appSettingsSection.Get<AppSettings>();
+var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = true;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = false,
+        ValidateAudience = false
+    };
+});
 
 var app = builder.Build();
 
@@ -51,7 +85,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
+
 
 app.MapControllers();
 

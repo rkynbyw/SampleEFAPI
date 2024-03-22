@@ -100,8 +100,9 @@ public class CategoriesController : Controller
             ViewData["pageNumber"] = pageNumber;
             ViewData["pageSize"] = pageSize;
 
-            var maxsize = await _categoryServices.GetCountCategories(search);
 
+            var maxsize = await _categoryServices.GetCountCategories(search);
+            var totalPages = (int)Math.Ceiling((double)maxsize / pageSize);
             if (act == "next")
             {
                 if (pageNumber * pageSize < maxsize)
@@ -118,6 +119,8 @@ public class CategoriesController : Controller
                 }
                 ViewData["pageNumber"] = pageNumber;
             }
+            ViewData["totalPages"] = totalPages;
+            categories = await _categoryServices.GetWithPaging(pageNumber, pageSize, search);
         }
         catch (Exception ex)
         {
@@ -141,7 +144,6 @@ public class CategoriesController : Controller
     //    {
 
     //        var maxsize = await _categoryServices.GetCountCategories(search);
-
     //        var totalPages = (int)Math.Ceiling((double)maxsize / pageSize);
 
     //        if (act == "next" && pageNumber < totalPages)
@@ -166,11 +168,6 @@ public class CategoriesController : Controller
 
     //    return View(categories);
     //}
-
-
-
-
-
 
 
     public async Task<IActionResult> GetFromServices()
